@@ -9,7 +9,8 @@ namespace AccountLibrary.API.Services
     public interface IPaymentLibraryRepository
     {       
        bool CreditAmount(PaymentRequest accountNumber);
-    //    bool DebitAmount(PaymentRequest accountNumber);
+        System.Threading.Tasks.Task<double> GetAccountDetailsAsync(string accountNumber);
+
 
     }
 }

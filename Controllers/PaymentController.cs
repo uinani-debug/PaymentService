@@ -14,6 +14,7 @@ using Confluent.Kafka;
 using PaymentService.API.Models;
 using Newtonsoft.Json;
 using System.Threading;
+using Microsoft.AspNetCore.Http;
 
 namespace AccountLibrary.API.Controllers
 {
@@ -41,6 +42,20 @@ namespace AccountLibrary.API.Controllers
         [HttpPost]
         public ActionResult<string> AccountTransaction(PaymentRequest Request)
         {
+            if (Request == null || Request.TransferAmount.Amount == null || string.IsNullOrEmpty(Request.AccountIdentifier))
+            {
+                return NotFound();
+            }
+
+            var transferAmount = Request.TransferAmount.Amount;
+            var accountNumber = Request.AccountIdentifier;
+            var availablebalanceresult = _PaymentLibraryRepository.GetAccountDetailsAsync(accountNumber);
+            var availableBalance = availablebalanceresult.Result;
+            if (transferAmount > availableBalance)
+            {
+                var error = new PaymentService.API.Models.Error() { ErrorMessage = "Insufficient Balance, Cannot Initiate Payment" };
+                return StatusCode(StatusCodes.Status403Forbidden, error);
+            }
 
             if (Request == null)
             {
